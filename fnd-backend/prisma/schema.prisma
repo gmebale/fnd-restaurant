@@ -1,0 +1,446 @@
+// Prisma Schema for Fast & Delicious Restaurant
+// Database: MySQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// USER & AUTHENTICATION
+// ============================================
+
+enum UserRole {
+  CLIENT
+  ADMIN
+  CUISINIER
+  LIVREUR
+  SUPER_ADMIN
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String?  // Nullable pour OAuth
+  name      String
+  phone     String?
+  role      UserRole @default(CLIENT)
+  points    Int      @default(0)
+  avatar    String?
+  provider  String?  // 'local', 'google', 'apple'
+  providerId String? // ID du provider OAuth
+
+  // Staff fields
+  hireDate  DateTime?
+  salary    Float?
+  status    String?  @default("active") // 'active', 'inactive'
+
+  // Relations
+  addresses        Address[]
+  orders           Order[]
+  favorites        Favorite[]
+  reviews          Review[]
+  messages         Message[]
+  notifications    Notification[]
+  loyaltyPoints    LoyaltyPoints?
+  loyaltyTransactions LoyaltyTransaction[]
+  cart             Cart?
+  tickets          Ticket[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@index([role])
+}
+
+model Address {
+  id        String   @id @default(uuid())
+  userId    String
+  label     String   // "Maison", "Bureau", etc.
+  street    String
+  city      String   @default("Rabat")
+  zipCode   String?
+  isDefault Boolean  @default(false)
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders    Order[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, label])
+  @@index([userId])
+}
+
+// ============================================
+// PRODUCTS
+// ============================================
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  description String   @db.Text
+  category    String
+  price       Float
+  image       String
+  available   Boolean  @default(true)
+  popular     Boolean  @default(false)
+  
+  // Relations
+  orderItems  OrderItem[]
+  favorites   Favorite[]
+  reviews     Review[]
+  cartItems   CartItem[]
+  productImages ProductImage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@index([available])
+  @@index([popular])
+}
+
+model ProductImage {
+  id        String  @id @default(uuid())
+  productId String
+  url       String
+
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+}
+
+// ============================================
+// ORDERS
+// ============================================
+
+enum OrderStatus {
+  PENDING
+  PREPARING
+  READY
+  DELIVERING
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  ONLINE
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+model Order {
+  id              String        @id @default(uuid())
+  userId          String?
+  phone           String
+  address         String
+  addressId       String?
+
+  status          OrderStatus   @default(PENDING)
+  subtotal        Float
+  deliveryFee     Float         @default(15)
+  discount        Float         @default(0)
+  promoCode       String?
+  total           Float
+
+  notes           String?       @db.Text
+  paymentMethod   PaymentMethod @default(CASH)
+  paymentStatus   PaymentStatus @default(PENDING)
+
+  deliveryPersonId String?
+  estimatedTime    DateTime?
+  deliveredAt      DateTime?
+
+  // Relations
+  user            User?         @relation(fields: [userId], references: [id])
+  addressRelation Address?      @relation(fields: [addressId], references: [id])
+  items           OrderItem[]
+  messages        Message[]
+  review          Review?
+  promo           PromoCode?    @relation(fields: [promoCode], references: [code])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([deliveryPersonId])
+}
+
+model OrderItem {
+  id          String  @id @default(uuid())
+  orderId     String
+  productId   String
+  productName String  // Snapshot
+  productPrice Float  // Snapshot
+  quantity    Int
+  subtotal    Float
+  
+  order       Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product     Product @relation(fields: [productId], references: [id])
+  
+  @@index([orderId])
+  @@index([productId])
+}
+
+// ============================================
+// CART
+// ============================================
+
+model Cart {
+  id        String     @id @default(uuid())
+  userId    String     @unique
+  
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+  
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        String  @id @default(uuid())
+  cartId    String
+  productId String
+  quantity  Int     @default(1)
+  
+  cart      Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
+  
+  @@unique([cartId, productId])
+  @@index([cartId])
+}
+
+// ============================================
+// FAVORITES
+// ============================================
+
+model Favorite {
+  id        String   @id @default(uuid())
+  userId    String
+  productId String
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  
+  @@unique([userId, productId])
+  @@index([userId])
+}
+
+// ============================================
+// REVIEWS
+// ============================================
+
+model Review {
+  id           String   @id @default(uuid())
+  userId       String
+  orderId      String   @unique
+  productId    String?
+  rating       Int      // 1-5
+  comment      String?  @db.Text
+  adminResponse String? @db.Text
+
+  user         User     @relation(fields: [userId], references: [id])
+  order        Order    @relation(fields: [orderId], references: [id])
+  product      Product? @relation(fields: [productId], references: [id])
+  reviewImages ReviewImage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([orderId])
+  @@index([productId])
+  @@index([rating])
+}
+
+model ReviewImage {
+  id       String @id @default(uuid())
+  reviewId String
+  url      String
+
+  review   Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@index([reviewId])
+}
+
+// ============================================
+// LOYALTY POINTS
+// ============================================
+
+model LoyaltyPoints {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  points      Int      @default(0)
+  totalEarned Int      @default(0)
+  totalSpent  Int      @default(0)
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions LoyaltyTransaction[]
+  
+  updatedAt DateTime @updatedAt
+}
+
+enum LoyaltyTransactionType {
+  EARNED
+  REDEEMED
+}
+
+model LoyaltyTransaction {
+  id          String                @id @default(uuid())
+  userId      String
+  loyaltyPointsId String
+  orderId     String?
+  type        LoyaltyTransactionType
+  points      Int
+  description String
+  
+  user        User                  @relation(fields: [userId], references: [id])
+  loyaltyPoints LoyaltyPoints       @relation(fields: [loyaltyPointsId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  
+  @@index([userId])
+  @@index([orderId])
+}
+
+// ============================================
+// PROMO CODES
+// ============================================
+
+enum PromoType {
+  PERCENTAGE
+  FIXED
+  FREE_DELIVERY
+  FREE_PRODUCT
+}
+
+model PromoCode {
+  code        String    @id
+  type        PromoType
+  value       Float     // Pourcentage ou montant fixe
+  minAmount   Float?    // Montant minimum de commande
+  maxDiscount Float?    // Réduction maximale
+  validFrom   DateTime
+  validUntil  DateTime
+  usageLimit  Int?      // Limite d'utilisation totale
+  usageCount  Int       @default(0)
+  active      Boolean   @default(true)
+  
+  orders      Order[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([active])
+  @@index([validUntil])
+}
+
+// ============================================
+// MESSAGES & CHAT
+// ============================================
+
+enum MessageType {
+  TEXT
+  IMAGE
+  SYSTEM
+}
+
+model Message {
+  id        String      @id @default(uuid())
+  orderId   String
+  userId    String
+  content   String      @db.Text
+  type      MessageType @default(TEXT)
+  read      Boolean     @default(false)
+  
+  order     Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id])
+  
+  createdAt DateTime    @default(now())
+  
+  @@index([orderId])
+  @@index([userId])
+  @@index([read])
+}
+
+// ============================================
+// NOTIFICATIONS
+// ============================================
+
+enum NotificationType {
+  ORDER
+  MESSAGE
+  PROMO
+  SYSTEM
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String           @db.Text
+  link      String?
+  read      Boolean          @default(false)
+  
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime         @default(now())
+  
+  @@index([userId])
+  @@index([read])
+  @@index([createdAt])
+}
+
+// ============================================
+// SUPPORT TICKETS
+// ============================================
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model Ticket {
+  id          String          @id @default(uuid())
+  userId      String
+  subject     String
+  description String          @db.Text
+  status      TicketStatus    @default(OPEN)
+  priority    TicketPriority  @default(MEDIUM)
+  adminNotes  String?        @db.Text
+  
+  user        User            @relation(fields: [userId], references: [id])
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([status])
+  @@index([priority])
+}
+
