@@ -1,2 +1,0 @@
-- [ ] Ajouter la logique d'attribution de points de fidélité lors de la création d'une commande dans order.controller.js
-- [ ] Créer une transaction de fidélité pour chaque commande
