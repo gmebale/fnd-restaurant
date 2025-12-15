@@ -295,5 +295,6 @@ Pour toute question ou problème :
 ---
 
 **F&D Fast & Delicious © 2025** — Rabat, Agdal
-#   f n d - r e s t a u r a n t  
+#   f n d - r e s t a u r a n t 
+ 
  
