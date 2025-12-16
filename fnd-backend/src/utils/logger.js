@@ -2,45 +2,34 @@ const winston = require('winston');
 const path = require('path');
 const fs = require('fs');
 
-// Create logs directory if it doesn't exist
-const logsDir = path.join(__dirname, '../../logs');
-if (!fs.existsSync(logsDir)) {
-  fs.mkdirSync(logsDir, { recursive: true });
+// Chemin du dossier de logs local
+const logDir = path.join(__dirname, '../../logs');
+
+// Si on est en local, créer le dossier logs
+if (process.env.NODE_ENV !== 'production') {
+  if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir);
+  }
 }
 
+// Créer le logger
 const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || 'info',
+  level: 'info',
   format: winston.format.combine(
-    winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-    winston.format.errors({ stack: true }),
-    winston.format.splat(),
-    winston.format.json()
+    winston.format.timestamp(),
+    winston.format.printf(({ timestamp, level, message }) => {
+      return `${timestamp} [${level.toUpperCase()}]: ${message}`;
+    })
   ),
-  defaultMeta: { service: 'fnd-backend' },
   transports: [
-    // Write all logs to combined.log
-    new winston.transports.File({
-      filename: path.join(logsDir, 'combined.log'),
-    }),
-    // Write errors to error.log
-    new winston.transports.File({
-      filename: path.join(logsDir, 'error.log'),
-      level: 'error',
-    }),
+    // Toujours loguer dans la console (Vercel et local)
+    new winston.transports.Console(),
+
+    // Log vers fichier uniquement en développement local
+    ...(process.env.NODE_ENV !== 'production'
+      ? [new winston.transports.File({ filename: path.join(logDir, 'combined.log') })]
+      : [])
   ],
 });
 
-// If not in production, log to console as well
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(
-    new winston.transports.Console({
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.simple()
-      ),
-    })
-  );
-}
-
 module.exports = logger;
-
