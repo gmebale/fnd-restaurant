@@ -3,6 +3,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
 const dotenv = require('dotenv');
+const serverless = require('serverless-http');
 
 // Load environment variables
 dotenv.config();
@@ -31,7 +32,7 @@ const app = express();
 app.use(helmet());
 app.use(compression());
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'https://your-frontend-url.vercel.app',
+  origin: process.env.CORS_ORIGIN || ['https://fnd-frontend.vercel.app', /\.vercel\.app$/],
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
@@ -71,7 +72,7 @@ app.use((req, res) => {
 });
 
 // Export for Vercel
-module.exports = app;
+module.exports = serverless(app);
 
 // For local development
 if (require.main === module) {
