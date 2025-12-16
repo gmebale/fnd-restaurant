@@ -32,7 +32,7 @@ const app = express();
 app.use(helmet());
 app.use(compression());
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || ['https://fnd-frontend.vercel.app', /\.vercel\.app$/],
+  origin: process.env.CORS_ORIGIN || ['https://fnd-restaurant-frontend.vercel.app', /\.vercel\.app$/],
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
