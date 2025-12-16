@@ -4,14 +4,19 @@
   "description": "Backend API for Fast & Delicious Restaurant",
   "main": "src/server.js",
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
-    "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev",
-    "prisma:studio": "prisma studio",
-    "prisma:seed": "node prisma/seed.js",
-    "test": "jest"
-  },
+  "start": "node src/server.js",
+  "dev": "nodemon src/server.js",
+
+  "build": "prisma generate",
+  "postinstall": "prisma generate",
+
+  "prisma:generate": "prisma generate",
+  "prisma:migrate": "prisma migrate dev",
+  "prisma:studio": "prisma studio",
+  "prisma:seed": "node prisma/seed.js",
+
+  "test": "jest"
+},
   "keywords": [
     "restaurant",
     "api",
