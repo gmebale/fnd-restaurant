@@ -1,5 +1,6 @@
 // API Configuration
-export const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+export const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://fnd-backend.vercel.app/api';
+
 
 // Token storage keys
 export const TOKEN_KEY = 'fnd_access_token';
