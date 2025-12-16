@@ -75,10 +75,4 @@ app.use((req, res) => {
 module.exports = serverless(app);
 
 // For local development
-if (require.main === module) {
-  const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => {
-    logger.info(`🚀 Server running on port ${PORT}`);
-    logger.info(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-  });
-}
+
