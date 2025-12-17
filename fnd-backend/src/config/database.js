@@ -1,23 +1,20 @@
 const { PrismaClient } = require('@prisma/client');
 
-const prisma = new PrismaClient({
-  log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-});
+// Global client for serverless environments
+let prisma;
 
-// Test connection
-prisma.$connect()
-  .then(() => {
-    console.log('✅ Database connected successfully');
-  })
-  .catch((error) => {
-    console.error('❌ Database connection error:', error);
-    process.exit(1);
+if (process.env.NODE_ENV === 'production') {
+  prisma = new PrismaClient({
+    log: ['error'],
   });
-
-// Graceful shutdown
-process.on('beforeExit', async () => {
-  await prisma.$disconnect();
-});
+} else {
+  if (!global.prisma) {
+    global.prisma = new PrismaClient({
+      log: ['query', 'error', 'warn'],
+    });
+  }
+  prisma = global.prisma;
+}
 
 module.exports = prisma;
 

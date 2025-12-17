@@ -2,17 +2,6 @@ const prisma = require('../config/database');
 
 module.exports = {
   getAllProducts: async (req, res) => {
-    // Set CORS headers
-    res.setHeader('Access-Control-Allow-Origin', process.env.CORS_ORIGIN || 'https://fnd-restaurant-frontend.vercel.app');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-    // Handle preflight requests
-    if (req.method === 'OPTIONS') {
-      return res.status(200).end();
-    }
-
     try {
       const { category } = req.query;
 
