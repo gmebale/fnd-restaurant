@@ -12,17 +12,23 @@ module.exports = {
 
       const products = await prisma.product.findMany({
         where,
-        include: {
-          productImages: true,
-          _count: {
-            select: { favorites: true, reviews: true }
-          }
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          category: true,
+          price: true,
+          image: true,
+          available: true,
+          popular: true,
+          createdAt: true
         },
         orderBy: [
           { popular: 'desc' },
           { createdAt: 'desc' }
         ]
       });
+
 
       res.json(products);
     } catch (error) {
@@ -38,12 +44,15 @@ module.exports = {
           popular: true,
           available: true
         },
-        include: {
-          productImages: true,
-          _count: {
-            select: { favorites: true, reviews: true }
-          }
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          price: true,
+          image: true,
+          popular: true
         },
+
         orderBy: { createdAt: 'desc' },
         take: 10 // Limit to 10 popular products
       });
