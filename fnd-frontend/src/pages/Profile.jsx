@@ -120,7 +120,7 @@ export default function Profile(){
         {isAdmin && (
           <Card className="border-4 border-[#FFB703] bg-gradient-to-br from-[#FFB703] to-[#FFB703]/80 mb-8">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="flex items-center gap-4">
                   <Shield className="w-16 h-16 text-gray-900" />
                   <div>
@@ -128,7 +128,7 @@ export default function Profile(){
                     <p className="text-gray-800 font-semibold">Vous avez les droits d'administrateur</p>
                   </div>
                 </div>
-                <Button className="bg-gray-900 text-[#FFB703] hover:bg-gray-800" onClick={() => navigate('/admin')}>
+                <Button className="bg-gray-900 text-[#FFB703] hover:bg-gray-800 w-full md:w-auto" onClick={() => navigate('/admin')}>
                    DASHBOARD ADMIN
                 </Button>
               </div>
