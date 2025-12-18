@@ -84,23 +84,23 @@ export default function Header(){
             </button>
           </div>
         </div>
-
-        {open && (
-          <div className="md:hidden bg-white px-4 py-4 border-b border-gray-100 shadow-sm">
-            <div className="flex flex-col gap-3 text-gray-800">
-              <NavLink to="/" onClick={()=>setOpen(false)} className={({isActive})=>`px-3 py-2 rounded-md text-sm font-semibold transition ${isActive ? 'bg-[#fc0000] text-white shadow-sm' : 'text-gray-700 hover:bg-[#fc0000]'}`}>Accueil</NavLink>
-              <NavLink to="/menu" onClick={()=>setOpen(false)} className={({isActive})=>`px-3 py-2 rounded-md text-sm font-semibold transition ${isActive ? 'bg-[#fc0000] text-white shadow-sm' : 'text-gray-700 hover:bg-[#fc0000]'}`}>Menu</NavLink>
-              {user && (
-                <>
-                  <NavLink to="/favorites" onClick={()=>setOpen(false)} className={({isActive})=>`px-3 py-2 rounded-md text-sm font-semibold transition ${isActive ? 'bg-[#fc0000] text-white shadow-sm' : 'text-gray-700 hover:bg-[#fc0000]'}`}>Favoris</NavLink>
-                  <NavLink to="/orders" onClick={()=>setOpen(false)} className={({isActive})=>`px-3 py-2 rounded-md text-sm font-semibold transition ${isActive ? 'bg-[#fc0000] text-white shadow-sm' : 'text-gray-700 hover:bg-[#fc0000]'}`}>Commandes</NavLink>
-                </>
-              )}
-              <a href="/menu" className="btn-primary px-4 py-2 rounded-lg text-center">Commander</a>
-            </div>
-          </div>
-        )}
       </header>
+
+      {open && (
+        <div className="fixed top-16 left-0 right-0 z-40 bg-white px-4 py-4 border-b border-gray-100 shadow-sm md:hidden">
+          <div className="flex flex-col gap-3 text-gray-800">
+            <NavLink to="/" onClick={()=>setOpen(false)} className={({isActive})=>`px-3 py-2 rounded-md text-sm font-semibold transition ${isActive ? 'bg-[#fc0000] text-white shadow-sm' : 'text-gray-700 hover:bg-[#fc0000]'}`}>Accueil</NavLink>
+            <NavLink to="/menu" onClick={()=>setOpen(false)} className={({isActive})=>`px-3 py-2 rounded-md text-sm font-semibold transition ${isActive ? 'bg-[#fc0000] text-white shadow-sm' : 'text-gray-700 hover:bg-[#fc0000]'}`}>Menu</NavLink>
+            {user && (
+              <>
+                <NavLink to="/favorites" onClick={()=>setOpen(false)} className={({isActive})=>`px-3 py-2 rounded-md text-sm font-semibold transition ${isActive ? 'bg-[#fc0000] text-white shadow-sm' : 'text-gray-700 hover:bg-[#fc0000]'}`}>Favoris</NavLink>
+                <NavLink to="/orders" onClick={()=>setOpen(false)} className={({isActive})=>`px-3 py-2 rounded-md text-sm font-semibold transition ${isActive ? 'bg-[#fc0000] text-white shadow-sm' : 'text-gray-700 hover:bg-[#fc0000]'}`}>Commandes</NavLink>
+              </>
+            )}
+            <a href="/menu" className="btn-primary px-4 py-2 rounded-lg text-center">Commander</a>
+          </div>
+        </div>
+      )}
     </>
   )
 }
